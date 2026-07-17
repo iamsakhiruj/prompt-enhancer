@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8" />
+<style>
+  body {
+    width: 420px;
+    margin: 0;
+    background: #16161d;
+    color: #e7e7ef;
+    font: 13px/1.45 system-ui, -apple-system, sans-serif;
+  }
+  header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 14px;
+    border-bottom: 1px solid #2e2e3a;
+    font-weight: 700;
+  }
+  header .dot {
+    width: 10px; height: 10px; border-radius: 50%;
+    background: linear-gradient(135deg, #4f46e5, #7c3aed);
+  }
+  header .hint { margin-left: auto; color: #8b8b9e; font-weight: 400; font-size: 11px; }
+  textarea {
+    display: block;
+    width: 100%;
+    box-sizing: border-box;
+    border: none;
+    background: #16161d;
+    color: #e7e7ef;
+    padding: 12px 14px;
+    resize: vertical;
+    font: 12.5px/1.5 ui-monospace, Menlo, Consolas, monospace;
+  }
+  textarea:focus { outline: none; background: #1a1a22; }
+  #in { height: 110px; border-bottom: 1px solid #2e2e3a; }
+  #out { height: 200px; }
+  .bar {
+    display: flex;
+    gap: 8px;
+    padding: 10px 14px;
+    border-top: 1px solid #2e2e3a;
+  }
+  button {
+    border: none;
+    border-radius: 8px;
+    padding: 8px 14px;
+    font: 600 12.5px system-ui, sans-serif;
+    cursor: pointer;
+  }
+  #enhance {
+    flex: 1;
+    background: linear-gradient(135deg, #4f46e5, #7c3aed);
+    color: #fff;
+  }
+  #copy { background: #26262f; color: #e7e7ef; }
+  #copy:hover { background: #30303c; }
+  #enhance:hover { filter: brightness(1.1); }
+  #added { padding: 0 14px 8px; color: #8b8b9e; font-size: 11px; min-height: 14px; }
+</style>
+</head>
+<body>
+  <header><span class="dot"></span>Prompt Enhancer<span class="hint">runs locally · nothing sent anywhere</span></header>
+  <textarea id="in" placeholder="Paste your rough prompt here…"></textarea>
+  <div class="bar">
+    <button id="enhance">✦ Enhance</button>
+    <button id="copy">Copy result</button>
+  </div>
+  <div id="added"></div>
+  <textarea id="out" placeholder="Enhanced prompt appears here…" readonly></textarea>
+  <script src="enhancer.js"></script>
+  <script src="popup.js"></script>
+</body>
+</html>

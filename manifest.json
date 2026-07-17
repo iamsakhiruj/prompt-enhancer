@@ -1,0 +1,32 @@
+{
+  "manifest_version": 3,
+  "name": "Prompt Enhancer",
+  "version": "1.0.0",
+  "description": "One-click prompt enhancement for ChatGPT, Claude, Gemini and more. Free, private, runs 100% locally.",
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://chatgpt.com/*",
+        "https://chat.openai.com/*",
+        "https://claude.ai/*",
+        "https://gemini.google.com/*",
+        "https://chat.deepseek.com/*",
+        "https://grok.com/*",
+        "https://www.perplexity.ai/*",
+        "https://copilot.microsoft.com/*"
+      ],
+      "js": ["enhancer.js", "content.js"],
+      "css": ["content.css"],
+      "run_at": "document_idle"
+    }
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "Prompt Enhancer"
+  }
+}
