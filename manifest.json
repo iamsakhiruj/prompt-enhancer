@@ -1,13 +1,22 @@
 {
   "manifest_version": 3,
   "name": "Prompt Enhancer",
-  "version": "1.0.0",
-  "description": "One-click prompt enhancement for ChatGPT, Claude, Gemini and more. Free, private, runs 100% locally.",
+  "version": "2.0.0",
+  "description": "One-click prompt enhancement for ChatGPT, Claude, Gemini and more. Rule-based (free, fully local) or AI-powered with your own API key.",
   "icons": {
     "16": "icons/icon16.png",
     "48": "icons/icon48.png",
     "128": "icons/icon128.png"
   },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "permissions": ["storage"],
+  "host_permissions": [
+    "https://generativelanguage.googleapis.com/*",
+    "https://api.openai.com/*",
+    "https://api.anthropic.com/*"
+  ],
   "content_scripts": [
     {
       "matches": [

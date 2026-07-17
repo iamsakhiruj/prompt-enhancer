@@ -50,6 +50,7 @@
     font: 600 12.5px system-ui, sans-serif;
     cursor: pointer;
   }
+  button:disabled { opacity: 0.55; cursor: default; }
   #enhance {
     flex: 1;
     background: linear-gradient(135deg, #4f46e5, #7c3aed);
@@ -57,12 +58,123 @@
   }
   #copy { background: #26262f; color: #e7e7ef; }
   #copy:hover { background: #30303c; }
-  #enhance:hover { filter: brightness(1.1); }
+  #enhance:hover:not(:disabled) { filter: brightness(1.1); }
   #added { padding: 0 14px 8px; color: #8b8b9e; font-size: 11px; min-height: 14px; }
+
+  /* ---- AI settings panel ---- */
+  details {
+    border-top: 1px solid #2e2e3a;
+  }
+  summary {
+    padding: 10px 14px;
+    cursor: pointer;
+    user-select: none;
+    font-size: 12px;
+    color: #8b8b9e;
+    list-style: none;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  summary::-webkit-details-marker { display: none; }
+  summary::before {
+    content: "▶";
+    font-size: 9px;
+    display: inline-block;
+    transition: transform 0.15s;
+  }
+  details[open] summary::before { transform: rotate(90deg); }
+  summary:hover { color: #e7e7ef; }
+
+  .ai-body {
+    padding: 4px 14px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .ai-label {
+    display: block;
+    font-size: 11px;
+    color: #8b8b9e;
+    margin-bottom: 4px;
+  }
+  .ai-body select,
+  .ai-body input[type="password"] {
+    width: 100%;
+    box-sizing: border-box;
+    background: #1e1e28;
+    border: 1px solid #3a3a48;
+    border-radius: 6px;
+    color: #e7e7ef;
+    font: 12.5px system-ui, sans-serif;
+    padding: 6px 8px;
+  }
+  .ai-body select:focus,
+  .ai-body input:focus { outline: none; border-color: #4f46e5; }
+
+  .key-row { display: flex; gap: 6px; }
+  .key-row input { flex: 1; }
+
+  #test-key {
+    background: #26262f;
+    color: #e7e7ef;
+    border-radius: 6px;
+    padding: 6px 12px;
+    font-size: 12px;
+  }
+  #test-key:hover:not(:disabled) { background: #30303c; }
+
+  #gemini-link {
+    font-size: 11px;
+    color: #8b8b9e;
+    display: none;
+  }
+  #gemini-link a { color: #a5b4fc; text-decoration: none; }
+  #gemini-link a:hover { text-decoration: underline; }
+
+  .ai-toggle {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    color: #e7e7ef;
+    cursor: pointer;
+  }
+  .ai-toggle input[type="checkbox"] {
+    width: auto;
+    cursor: pointer;
+    accent-color: #4f46e5;
+    margin: 0;
+  }
+
+  .ai-row {
+    display: flex;
+    gap: 8px;
+  }
+  #save-ai {
+    flex: 1;
+    background: linear-gradient(135deg, #4f46e5, #7c3aed);
+    color: #fff;
+    border-radius: 6px;
+    padding: 7px 14px;
+    font-size: 12px;
+  }
+  #save-ai:hover { filter: brightness(1.1); }
+
+  #ai-status {
+    font-size: 11.5px;
+    min-height: 16px;
+    text-align: center;
+  }
+  #ai-status.ok  { color: #34d399; }
+  #ai-status.err { color: #f87171; }
 </style>
 </head>
 <body>
-  <header><span class="dot"></span>Prompt Enhancer<span class="hint">runs locally · nothing sent anywhere</span></header>
+  <header>
+    <span class="dot"></span>Prompt Enhancer
+    <span class="hint">runs locally · AI optional</span>
+  </header>
   <textarea id="in" placeholder="Paste your rough prompt here…"></textarea>
   <div class="bar">
     <button id="enhance">✦ Enhance</button>
@@ -70,6 +182,45 @@
   </div>
   <div id="added"></div>
   <textarea id="out" placeholder="Enhanced prompt appears here…" readonly></textarea>
+
+  <details id="ai-settings">
+    <summary>⚙ AI mode</summary>
+    <div class="ai-body">
+
+      <div>
+        <label class="ai-label" for="ai-provider">Provider</label>
+        <select id="ai-provider">
+          <option value="gemini">Google Gemini (recommended — free API key)</option>
+          <option value="openai">OpenAI</option>
+          <option value="anthropic">Anthropic</option>
+        </select>
+      </div>
+
+      <div id="gemini-link">
+        Get a free key at <a href="https://aistudio.google.com/apikey" target="_blank">aistudio.google.com/apikey</a>
+      </div>
+
+      <div>
+        <label class="ai-label" for="ai-key">API key</label>
+        <div class="key-row">
+          <input id="ai-key" type="password" placeholder="Paste your API key…" autocomplete="off" />
+          <button id="test-key" type="button">Test</button>
+        </div>
+      </div>
+
+      <label class="ai-toggle">
+        <input type="checkbox" id="ai-enabled" />
+        Use AI enhancement when available
+      </label>
+
+      <div class="ai-row">
+        <button id="save-ai" type="button">Save settings</button>
+      </div>
+
+      <div id="ai-status" class="ai-status"></div>
+    </div>
+  </details>
+
   <script src="enhancer.js"></script>
   <script src="popup.js"></script>
 </body>

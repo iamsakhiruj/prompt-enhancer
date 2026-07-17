@@ -32,7 +32,7 @@
   function readInput(el) {
     if (!el) return "";
     if (el.tagName === "TEXTAREA" || el.tagName === "INPUT") return el.value;
-    return el.innerText.replace(/\u200b/g, "");
+    return el.innerText.replace(/​/g, "");
   }
 
   function writeInput(el, text) {
@@ -58,6 +58,15 @@
     el.dispatchEvent(new Event("input", { bubbles: true }));
   }
 
+  // ---- Async helpers ---------------------------------------------------
+  function storageGet(keys) {
+    return new Promise((resolve) => chrome.storage.local.get(keys, resolve));
+  }
+
+  function runtimeSend(msg) {
+    return new Promise((resolve) => chrome.runtime.sendMessage(msg, resolve));
+  }
+
   // ---- UI --------------------------------------------------------------
   const btn = document.createElement("button");
   btn.id = "pe-fab";
@@ -75,9 +84,11 @@
   panel.innerHTML = `
     <div class="pe-head">
       <span class="pe-title">Enhanced prompt</span>
+      <span class="pe-badge" id="pe-badge" hidden></span>
       <span class="pe-added" id="pe-added"></span>
       <button type="button" class="pe-x" id="pe-close" title="Close">×</button>
     </div>
+    <div id="pe-notice" class="pe-notice" hidden></div>
     <textarea id="pe-text" spellcheck="false"></textarea>
     <div class="pe-actions">
       <button type="button" id="pe-copy" class="pe-ghost">Copy</button>
@@ -87,6 +98,32 @@
 
   const $ = (id) => panel.querySelector(id);
   let currentInput = null;
+
+  function setMode(mode) {
+    const badge = $("#pe-badge");
+    if (mode === "loading") {
+      badge.className = "pe-badge pe-badge-loading";
+      badge.textContent = "✦ Enhancing…";
+      badge.hidden = false;
+      $("#pe-added").textContent = "";
+    } else if (mode === "ai") {
+      badge.className = "pe-badge pe-badge-ai";
+      badge.textContent = "AI enhanced";
+      badge.hidden = false;
+    } else {
+      badge.className = "pe-badge pe-badge-rule";
+      badge.textContent = "Rule enhanced";
+      badge.hidden = false;
+    }
+  }
+
+  function setNotice(msg, reason) {
+    const el = $("#pe-notice");
+    if (!msg) { el.hidden = true; el.textContent = ""; el.title = ""; return; }
+    el.textContent = msg;
+    el.title = reason || "";
+    el.hidden = false;
+  }
 
   function positionUI() {
     const el = findInput();
@@ -98,14 +135,45 @@
     btn.style.top = Math.max(8, r.top - btn.offsetHeight - 8) + "px";
   }
 
-  function openPanel() {
-    const raw = readInput(currentInput || findInput());
+  async function openPanel() {
+    const el = currentInput || findInput();
+    const raw = readInput(el);
     if (!raw.trim()) { flash(btn, "Type a prompt first"); return; }
-    const { enhanced, added } = window.__PromptEnhancer.enhance(raw);
-    $("#pe-text").value = enhanced;
-    $("#pe-added").textContent = added.length ? "added: " + added.join(" · ") : "";
-    panel.hidden = false;
-    positionPanel();
+
+    const s = await storageGet(["aiEnabled", "provider", "apiKey"]);
+    const useAI = !!(s.aiEnabled && s.apiKey && s.provider);
+
+    if (useAI) {
+      setMode("loading");
+      setNotice("");
+      $("#pe-text").value = "";
+      panel.hidden = false;
+      positionPanel();
+
+      try {
+        const resp = await runtimeSend({ type: "enhance", text: raw });
+        if (resp && resp.ok) {
+          $("#pe-text").value = resp.result;
+          setMode("ai");
+        } else {
+          throw new Error((resp && resp.error) || "Unknown error");
+        }
+      } catch (e) {
+        const { enhanced, added } = window.__PromptEnhancer.enhance(raw);
+        $("#pe-text").value = enhanced;
+        $("#pe-added").textContent = added.length ? "added: " + added.join(" · ") : "";
+        setMode("rule");
+        setNotice("AI unavailable — used quick mode", e.message);
+      }
+    } else {
+      const { enhanced, added } = window.__PromptEnhancer.enhance(raw);
+      $("#pe-text").value = enhanced;
+      setMode("rule");
+      $("#pe-added").textContent = added.length ? "added: " + added.join(" · ") : "";
+      setNotice("");
+      panel.hidden = false;
+      positionPanel();
+    }
   }
 
   function positionPanel() {
